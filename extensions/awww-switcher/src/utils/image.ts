@@ -1,7 +1,8 @@
-import { opendir, readdir, readFile, stat } from "fs/promises";
+import { stat } from "fs/promises";
 import { createReadStream } from "fs";
 import * as _path from "path";
 import { imageSize } from "image-size";
+import { readdirWSymlinks } from "./readdirWSymlinks";
 
 const hyprpaperSupportedFormats = ["jpg", "jpeg", "png", "webp", "gif"];
 
@@ -17,11 +18,10 @@ export interface Image {
 const parseImagesFromPath = async (path: string): Promise<string[]> => {
   try {
     // Recursively read all files in the directory and subdirectories
-    const entries = await readdir(path, { recursive: true, withFileTypes: true });
+    const entries = await readdirWSymlinks(path);
 
     return entries
       .filter((entry) => {
-        if (!entry.isFile()) return false;
         const ext = _path.extname(entry.name).toLowerCase().replace(".", "");
         return hyprpaperSupportedFormats.includes(ext);
       })
